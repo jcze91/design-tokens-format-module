@@ -1,6 +1,6 @@
 {
-    "id": "io.supernova.w3c-tokens-format",
-    "name": "Design Tokens Format Module",
+    "id": "io.supernova.w3c-tokens-format.lr",
+    "name": "Design Tokens Format Module LR",
     "description": "Export Supernova to Design Tokens Format Module define by W3C DCTG.",
     "author": "Supernova",
     "organization": "Supernova",

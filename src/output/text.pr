@@ -1,0 +1,7 @@
+
+{[ let brand = ds.currentBrand() /]}
+{[ const allTokens = ds.allTokens(brand.id) /]}
+{[ const allGroups = ds.allTokenGroups(brand.id) /]}
+{[ const rootGroup = ds.tokenGroupTreeByType("Text", brand.id) /]}
+{[ const sdTree = generateStyleDictionaryTree(rootGroup, allTokens, allGroups) /]}
+{{ objectToPrettyJson(sdTree) }}

@@ -26,7 +26,7 @@ declare global {
   //
   // Enums
   //
-  type TokenType = 'Color' | 'Typography' | 'Radius' | 'Font' | 'Measure' | 'Shadow' | 'Border' | 'Gradient' | 'Text'
+  type TokenType = 'Color' | 'Typography' | 'Radius' | 'Font' | 'Measure' | 'Shadow' | 'Border' | 'Gradient' | 'Text' | 'GenericToken'
   
   type SourceType = 'Supernova' | 'Figma'
 
@@ -68,6 +68,10 @@ declare global {
     value: MeasureTokenValue
   }
 
+  type GenericToken = Token & {
+    value: GenericTokenValue
+  }
+
   type BorderToken = Token & {
     value: BorderTokenValue
   }
@@ -106,13 +110,18 @@ declare global {
     referencedToken: ColorToken | null
   }
 
+  type GenericTokenValue = {
+    text: string
+    referencedToken: GenericToken | null
+  }
+  
   type TypographyTokenValue = {
     font: FontTokenValue
-    fontSize: MeasureTokenValue
+    fontSize: GenericTokenValue | MeasureTokenValue
     textDecoration: TextDecoration
     textCase: TextCase
     letterSpacing: MeasureTokenValue
-    lineHeight: MeasureTokenValue | null
+    lineHeight: GenericTokenValue | MeasureTokenValue | null
     paragraphIndent: MeasureTokenValue
     referencedToken: TypographyToken | null
   }

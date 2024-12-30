@@ -11,7 +11,7 @@ Pulsar.registerFunction("generateStyleDictionaryTree", (rootGroup: TokenGroup, a
   let writeRoot = {}
   // Compute full data structure of the entire type-dependent tree
   let result = representTree(rootGroup, allTokens, allGroups, writeRoot)
-
+  debugger;
   // Add top level entries which don't belong to any user-defined group
   for (let token of tokensOfGroup(rootGroup, allTokens)) {
     result[safeTokenName(token)] = representToken(token, allTokens, allGroups)
@@ -54,7 +54,11 @@ function representToken(token: Token, allTokens: Array<Token>, allGroups: Array<
     case "Color":
       return representColorToken(token as ColorToken, allTokens, allGroups)
     case "Border":
-      return representBorderToken(token as BorderToken, allTokens, allGroups)representFontTokenValue
+      return representBorderToken(token as BorderToken, allTokens, allGroups)
+    case 'Font':
+      return representFontToken(token as FontToken, allTokens, allGroups)
+    case "GenericToken":
+      return representGenericToken(token as GenericToken, allTokens, allGroups)
     case "Gradient":
       return representGradientToken(token as GradientToken, allTokens, allGroups)
     case "Measure":
@@ -97,6 +101,11 @@ function representGradientToken(token: GradientToken, allTokens: Array<Token>, a
 /** Represent full measure token, including wrapping meta-information such as user description */
 function representMeasureToken(token: MeasureToken, allTokens: Array<Token>, allGroups: Array<TokenGroup>): Object {
   let value = representMeasureTokenValue(token.value, allTokens, allGroups)
+  return tokenWrapper(token, value)
+}
+/** Represent full generic token, including wrapping meta-information such as user description */
+function representGenericToken(token: GenericToken, allTokens: Array<Token>, allGroups: Array<TokenGroup>): Object {
+  let value = representGenericTokenValue(token.value, allTokens, allGroups)
   return tokenWrapper(token, value)
 }
 
@@ -195,6 +204,18 @@ function representMeasureTokenValue(value: MeasureTokenValue, allTokens: Array<T
   return result
 }
 
+function representGenericTokenValue(value: GenericTokenValue, allTokens: Array<Token>, allGroups: Array<TokenGroup>): any {
+  let result: any
+  if (value.referencedToken) {
+    // Forms reference
+    result = referenceWrapper(referenceName(value.referencedToken, allGroups))
+  } else {
+    // Raw value
+    result = value.text
+  }
+  return result
+}
+
 
 function getValueWithUnit(value: number, unit: Unit): string {
   if (value === 0) {
@@ -272,11 +293,11 @@ function representTypographyTokenValue(value: TypographyTokenValue, allTokens: A
     // Raw value
     result = {
       fontFamily: representFontFamilyTokenValue(value.font, allTokens, allGroups),
-      fontSize: representMeasureTokenValue(value.fontSize, allTokens, allGroups),
+      fontSize: 'text' in value.fontSize ? representGenericTokenValue(value.fontSize, allTokens, allGroups) : representMeasureTokenValue(value.fontSize, allTokens, allGroups),
       fontWeight: representFontWeightTokenValue(value.font, allTokens, allGroups),
       letterSpacing: representMeasureTokenValue(value.letterSpacing, allTokens, allGroups),
       lineHeight: value.lineHeight
-        ? representMeasureTokenValue(value.lineHeight, allTokens, allGroups)
+        ? ('text' in value.lineHeight ? representGenericTokenValue(value.lineHeight, allTokens, allGroups) : representMeasureTokenValue(value.lineHeight, allTokens, allGroups))
         : undefined,
     }
   }
@@ -323,7 +344,7 @@ function representShadowTokenValue(value: ShadowTokenValue, allTokens: Array<Tok
       color: representColorTokenValue(value.color, allTokens, allGroups),
       offsetX: representMeasureTokenValue(value.x, allTokens, allGroups),
       offsetY: representMeasureTokenValue(value.y, allTokens, allGroups),
-      blur: representMeasureTokenValue(value.radius, allTokens, allGroups),,
+      blur: representMeasureTokenValue(value.radius, allTokens, allGroups),
       spread: representMeasureTokenValue(value.spread, allTokens, allGroups),
       
     }
@@ -405,7 +426,7 @@ function representGradientTokenValue(value: GradientTokenValue, allTokens: Array
 
 /** Retrieve wrapper to certain token (referenced by name) pointing to token value */
 function referenceWrapper(reference: string) {
-  return `{${reference}.value}`
+  return `{${reference}}`
 }
 
 /** Retrieve token wrapper containing its metadata and value information (used as container for each defined token) */
@@ -465,6 +486,8 @@ function typeLabel(type: TokenType) {
       return "color"
     case "Font":
       return "font"
+    case "GenericToken":
+      return "generic"
     case "Gradient":
       return "gradient"
     case "Measure":
